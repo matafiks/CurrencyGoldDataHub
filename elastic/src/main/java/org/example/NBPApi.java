@@ -13,15 +13,17 @@ import java.util.List;
 
 public class NBPApi {
     OkHttpClient client = new OkHttpClient();
-    String apiUrl = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"; // Table A contains exchange rates for the previous business day
+    String apiUrlYesterdayCurrencies = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"; // Table A contains exchange rates for the previous business day
+    String apiUrlLastMonthEuro = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/30?format=json";
 
-    Request request = new Request.Builder()
-            .url(apiUrl)
-            .get()
-            .build();
+
 
     //metoda pobierająca srednie kursy walut z dnia poprzedniego
     public void getYesterdaysCurrencies(){
+        Request request = new Request.Builder()
+                .url(apiUrlYesterdayCurrencies)
+                .get()
+                .build();
         try {
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
@@ -51,6 +53,42 @@ public class NBPApi {
                     System.out.println("Kod: " + code);
                     System.out.println("Kurs sredni: " + rate);
                     System.out.println();
+                }
+
+            } else {
+                System.err.println("Błąd: " + response.code() + " - " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // Metoda pobierająca kurs waluty euro z ostatnich 30 dni
+    public void getLastMonthEuroRates(){
+        Request request = new Request.Builder()
+                .url(apiUrlLastMonthEuro)
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                JsonObject mainObject = JsonParser.parseString(responseBody).getAsJsonObject();
+
+                // Wyodrebnij i drukuje informacje o walucie
+                String currency = mainObject.get("currency").getAsString();
+                String code = mainObject.get("code").getAsString();
+                System.out.println("Waluta: " + currency);
+                System.out.println("Kod: " + code + "\n");
+
+                // Wyodrebniaj i drukuj kursy z ostatnich 30 dni
+                JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
+                for (int i = 0; i < ratesArray.size(); i++) {
+                    JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
+                    String date = rateObject.get("effectiveDate").getAsString();
+                    double rate = rateObject.get("mid").getAsDouble();
+                    System.out.println("Data: " + date + ", Kurs: " + rate);
                 }
 
             } else {
