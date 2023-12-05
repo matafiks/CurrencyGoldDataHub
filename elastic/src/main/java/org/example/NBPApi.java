@@ -51,7 +51,7 @@ public class NBPApi {
 
                     System.out.println("Waluta: " + currency);
                     System.out.println("Kod: " + code);
-                    System.out.println("Kurs sredni: " + rate);
+                    System.out.println("Kurs średni: " + rate);
                     System.out.println();
                 }
 
@@ -62,7 +62,6 @@ public class NBPApi {
             e.printStackTrace();
         }
     }
-
 
     // Metoda pobierająca kurs waluty euro z ostatnich 30 dni
     public void getLastMonthEuroRates(){
@@ -82,7 +81,7 @@ public class NBPApi {
                 System.out.println("Waluta: " + currency);
                 System.out.println("Kod: " + code + "\n");
 
-                // Wyodrebniaj i drukuj kursy z ostatnich 30 dni
+                //Wyodrebniaj i drukuj kursy z ostatnich 30 dni
                 JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
                 for (int i = 0; i < ratesArray.size(); i++) {
                     JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
@@ -97,6 +96,47 @@ public class NBPApi {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public List<Currency> getLastMonthEuroRatesList(){
+        List<Currency> currencyList = new ArrayList<>();
+
+        Request request = new Request.Builder()
+                .url(apiUrlLastMonthEuro)
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                JsonObject mainObject = JsonParser.parseString(responseBody).getAsJsonObject();
+
+                // Wyodrebnij informacje o walucie
+                String currency = mainObject.get("currency").getAsString();
+                String code = mainObject.get("code").getAsString();
+
+                //TODO: utworzenie nowej klasy przechowującej obiekty wraz z datą dotyczącą danego kursu
+                // Wyodrebniaj kursy z ostatnich 30 dni
+                JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
+                for (int i = 0; i < ratesArray.size(); i++) {
+                    JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
+                    String date = rateObject.get("effectiveDate").getAsString();
+                    double rate = rateObject.get("mid").getAsDouble();
+
+                    // Tworzy obiekt Currency i dodaje go do listy
+                    Currency currentCurrency = new Currency(currency, code, rate);
+                    currencyList.add(currentCurrency);
+                }
+
+            } else {
+                System.err.println("Błąd: " + response.code() + " - " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return currencyList;
     }
 
 }
