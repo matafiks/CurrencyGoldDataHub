@@ -8,6 +8,6 @@ public class Main {
         //api.getLastMonthEuroRates();
         //elastic.postSampleDate();
         //api.getLastMonthEuroRatesList();
-        elastic.postData(api.getLastMonthEuroRatesList());
+        //elastic.postData(api.getLastMonthEuroRatesList());
     }
 }

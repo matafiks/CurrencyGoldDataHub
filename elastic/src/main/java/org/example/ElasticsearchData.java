@@ -70,13 +70,11 @@ public class ElasticsearchData {
         );
 
         for (Currency currency : currencies) {
-            // Przekształć obiekt currency do formatu JSON
             String jsonString = new Gson().toJson(currency);
 
-            // Utworzenie nowego dokumentu
             Request indexRequest = new Request(
                     "POST",
-                    "/nbpapi/_doc/"); // Używamy indeksu NBPApi
+                    "/nbpapi2/_doc/"); // Używamy indeksu NBPApi
             indexRequest.setJsonEntity(jsonString);
 
             try {

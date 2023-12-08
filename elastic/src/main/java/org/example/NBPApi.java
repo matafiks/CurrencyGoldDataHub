@@ -16,8 +16,6 @@ public class NBPApi {
     String apiUrlYesterdayCurrencies = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"; // Table A contains exchange rates for the previous business day
     String apiUrlLastMonthEuro = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/30?format=json";
 
-
-
     //metoda pobierająca srednie kursy walut z dnia poprzedniego
     public void getYesterdaysCurrencies(){
         Request request = new Request.Builder()
@@ -47,7 +45,7 @@ public class NBPApi {
                     String code = rateObject.get("code").getAsString();
                     double rate = rateObject.get("mid").getAsDouble();
 
-                    currencies.add(new org.example.Currency(currency, code, rate));
+                    currencies.add(new org.example.Currency(currency, code, rate, effectiveDate));
 
                     System.out.println("Waluta: " + currency);
                     System.out.println("Kod: " + code);
@@ -75,17 +73,16 @@ public class NBPApi {
                 String responseBody = response.body().string();
                 JsonObject mainObject = JsonParser.parseString(responseBody).getAsJsonObject();
 
-                // Wyodrebnij i drukuje informacje o walucie
                 String currency = mainObject.get("currency").getAsString();
                 String code = mainObject.get("code").getAsString();
                 System.out.println("Waluta: " + currency);
                 System.out.println("Kod: " + code + "\n");
 
-                //Wyodrebniaj i drukuj kursy z ostatnich 30 dni
                 JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
                 for (int i = 0; i < ratesArray.size(); i++) {
                     JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
                     String date = rateObject.get("effectiveDate").getAsString();
+                    System.out.println(date);
                     double rate = rateObject.get("mid").getAsDouble();
                     System.out.println("Data: " + date + ", Kurs: " + rate);
                 }
@@ -112,20 +109,16 @@ public class NBPApi {
                 String responseBody = response.body().string();
                 JsonObject mainObject = JsonParser.parseString(responseBody).getAsJsonObject();
 
-                // Wyodrebnij informacje o walucie
                 String currency = mainObject.get("currency").getAsString();
                 String code = mainObject.get("code").getAsString();
 
-                //TODO: utworzenie nowej klasy przechowującej obiekty wraz z datą dotyczącą danego kursu
-                // Wyodrebniaj kursy z ostatnich 30 dni
                 JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
                 for (int i = 0; i < ratesArray.size(); i++) {
                     JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
                     String date = rateObject.get("effectiveDate").getAsString();
                     double rate = rateObject.get("mid").getAsDouble();
 
-                    // Tworzy obiekt Currency i dodaje go do listy
-                    Currency currentCurrency = new Currency(currency, code, rate);
+                    Currency currentCurrency = new Currency(currency, code, rate, date);
                     currencyList.add(currentCurrency);
                 }
 
