@@ -1,5 +1,3 @@
-package org.example;
-
 public class Currency {
     public final String name;
     public final String code;

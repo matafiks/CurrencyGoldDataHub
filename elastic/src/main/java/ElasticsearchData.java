@@ -1,5 +1,3 @@
-package org.example;
-
 import com.google.gson.Gson;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -16,44 +14,6 @@ import java.util.List;
 public class ElasticsearchData {
     private final String userName = "elastic";
     private final String password = "fxXxLjHPI0NiLvBvEAZW";
-    public void postSampleDate() {
-        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(
-                AuthScope.ANY,
-                new UsernamePasswordCredentials(userName, password)
-        );
-
-        RestHighLevelClient client = new RestHighLevelClient(
-                RestClient.builder(
-                                new HttpHost("localhost", 9200, "http"))
-                        .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-        );
-
-        // Utworzenie dokumentu JSON
-        String jsonString = "{" +
-                "\"user\":\"kimchy\"," +
-                "\"postDate\":\"2013-01-30\"," +
-                "\"message\":\"siema\"" +
-                "}";
-
-        // Utworzenie nowego indeksu
-        Request indexRequest = new Request(
-                "PUT",
-                "/my_index/_doc/2");
-        indexRequest.setJsonEntity(jsonString);
-
-        try {
-            Response indexResponse = client.getLowLevelClient().performRequest(indexRequest);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            client.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void postData(List<Currency> currencies) {
 
@@ -71,10 +31,10 @@ public class ElasticsearchData {
 
         for (Currency currency : currencies) {
             String jsonString = new Gson().toJson(currency);
-
+            //waluta, war <- z nich biorą obecne wykresy dane
             Request indexRequest = new Request(
                     "POST",
-                    "/nbpapi2/_doc/"); // Używamy indeksu NBPApi
+                    "/waluta/_doc/"); // nazwa indeksu do którego wprowadzamy nasze dane
             indexRequest.setJsonEntity(jsonString);
 
             try {
@@ -90,4 +50,41 @@ public class ElasticsearchData {
             e.printStackTrace();
         }
     }
+
+    public void postGoldData(List<GoldPrice> goldPrices) {
+
+        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(userName, password)
+        );
+
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(
+                                new HttpHost("localhost", 9200, "http"))
+                        .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+        );
+
+        for (GoldPrice goldPrice : goldPrices) {
+            String jsonString = new Gson().toJson(goldPrice);
+
+            Request indexRequest = new Request(
+                    "POST",
+                    "/gold/_doc/"); // nazwa indeksu do którego wprowadzamy nasze dane
+            indexRequest.setJsonEntity(jsonString);
+
+            try {
+                Response indexResponse = client.getLowLevelClient().performRequest(indexRequest);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
