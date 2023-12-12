@@ -17,6 +17,7 @@ public class NBPApi {
     OkHttpClient client = new OkHttpClient();
     private final String apiUrlYesterdayCurrencies = "https://api.nbp.pl/api/exchangerates/tables/A?format=json";
     private final String apiUrlLastMonthEuro = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/30?format=json";
+    private final String apiUrlLastMonthDolar = "http://api.nbp.pl/api/exchangerates/rates/a/usd/last/30?format=json";
     private final String apiUrlDolar = "http://api.nbp.pl/api/exchangerates/rates/A/USD/2023-01-01/2023-12-12/";
     private final String apiUrlWarRubel = "http://api.nbp.pl/api/exchangerates/rates/A/RUB/2022-01-01/2022-12-31/";
     private final String apiUrlWarRubelB = "http://api.nbp.pl/api/exchangerates/rates/B/RUB/2022-01-01/2022-12-31/";
@@ -27,6 +28,42 @@ public class NBPApi {
 
         Request request = new Request.Builder()
                 .url(apiUrlLastMonthEuro)
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                JsonObject mainObject = JsonParser.parseString(responseBody).getAsJsonObject();
+
+                String currency = mainObject.get("currency").getAsString();
+                String code = mainObject.get("code").getAsString();
+
+                JsonArray ratesArray = mainObject.get("rates").getAsJsonArray();
+                for (int i = 0; i < ratesArray.size(); i++) {
+                    JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
+                    String date = rateObject.get("effectiveDate").getAsString();
+                    double rate = rateObject.get("mid").getAsDouble();
+
+                    Currency currentCurrency = new Currency(currency, code, rate, date);
+                    currencies.add(currentCurrency);
+                }
+
+            } else {
+                System.err.println("Błąd: " + response.code() + " - " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return currencies;
+    }
+
+    public List<Currency> getLastMonthDolarRatesList(){
+        List<Currency> currencies = new ArrayList<>();
+
+        Request request = new Request.Builder()
+                .url(apiUrlLastMonthDolar)
                 .get()
                 .build();
         try {

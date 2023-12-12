@@ -7,6 +7,7 @@ public class Main {
         elastic.postData(api.getUSDRatesForYear());
         elastic.postData(api.getRUBRatesForYear());
         elastic.postData(api.getRUBRatesForYearB());
+        elastic.postData(api.getLastMonthDolarRatesList());
         elastic.postGoldData(api.getGoldPricesForLastTenYears());
     }
 }
