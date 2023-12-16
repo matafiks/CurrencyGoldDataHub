@@ -18,10 +18,11 @@ public class NBPApi {
     private final String apiUrlYesterdayCurrencies = "https://api.nbp.pl/api/exchangerates/tables/A?format=json";
     private final String apiUrlLastMonthEuro = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/30?format=json";
     private final String apiUrlLastMonthDolar = "http://api.nbp.pl/api/exchangerates/rates/a/usd/last/30?format=json";
-    private final String apiUrlDolar = "http://api.nbp.pl/api/exchangerates/rates/A/USD/2023-01-01/2023-12-12/";
+    private final String apiUrlDolar = "http://api.nbp.pl/api/exchangerates/rates/A/USD/2023-01-01/2023-12-16/";
     private final String apiUrlWarRubel = "http://api.nbp.pl/api/exchangerates/rates/A/RUB/2022-01-01/2022-12-31/";
     private final String apiUrlWarRubelB = "http://api.nbp.pl/api/exchangerates/rates/B/RUB/2022-01-01/2022-12-31/";
-    private final String apiUrlGold = "http://api.nbp.pl/api/cenyzlota/2023-01-01/2023-12-12/";
+    private final String apiUrlWarRubelB23 = "http://api.nbp.pl/api/exchangerates/rates/B/RUB/2023-01-01/2023-12-16/";
+    private final String apiUrlGold = "http://api.nbp.pl/api/cenyzlota/2023-01-01/2023-12-16/";
 
     public List<Currency> getLastMonthEuroRatesList(){
         List<Currency> currencies = new ArrayList<>();
@@ -193,6 +194,35 @@ public class NBPApi {
     public List<Currency> getRUBRatesForYearB(){
         Request request = new Request.Builder()
                 .url(apiUrlWarRubelB)
+                .get()
+                .build();
+
+        List<Currency> currencies = new ArrayList<>();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                String responseBody = response.body().string();
+                JsonArray ratesArray = JsonParser.parseString(responseBody).getAsJsonObject().get("rates").getAsJsonArray();
+
+                for (int i = 0; i < ratesArray.size(); i++) {
+                    JsonObject rateObject = ratesArray.get(i).getAsJsonObject();
+                    String effectiveDate = rateObject.get("effectiveDate").getAsString();
+                    double rate = rateObject.get("mid").getAsDouble();
+                    currencies.add(new Currency("ruble", "RUB", rate, effectiveDate));
+                }
+            } else {
+                System.err.println("Błąd: " + response.code() + " - " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return currencies;
+    }
+
+    public List<Currency> getRUBRatesForYearB23(){
+        Request request = new Request.Builder()
+                .url(apiUrlWarRubelB23)
                 .get()
                 .build();
 
