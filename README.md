@@ -1,0 +1,1 @@
+A Java project designed to retrieve data (currency exchange rates, gold prices) from the National Bank of Poland's API and to pass them to an Elasticsearch database for analysis through charts created in Kibana.
